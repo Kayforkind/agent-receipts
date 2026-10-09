@@ -1,0 +1,10 @@
+{
+  "name": "agent-receipts",
+  "version": "0.1.0",
+  "description": "Hash-linked, verifiable receipts for AI agent runs: artifact digests, command results, tamper detection. Consistency check, not a signature.",
+  "type": "module",
+  "bin": { "agent-receipts": "receipt.mjs" },
+  "scripts": { "test": "node --test receipt.test.mjs" },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

@@ -1,0 +1,32 @@
+{
+  "version": "0.1",
+  "task": "Produce demo/report.txt",
+  "agent": "demo-agent",
+  "createdAt": "2026-10-09T05:06:42.784Z",
+  "result": "pass",
+  "checks": [
+    {
+      "name": "build",
+      "command": "node -e \"process.exit(0)\"",
+      "exitCode": 0,
+      "passed": true,
+      "durationMs": 84,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lint",
+      "command": "node -e \"process.exit(0)\"",
+      "exitCode": 0,
+      "passed": true,
+      "durationMs": 70,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "demo/report.txt",
+      "sha256": "155b5436a25b66116e6f520671318b79299fee0f7833151a7c5fd2ab6520271a"
+    }
+  ],
+  "selfHash": "47fa9b8223ef921f39cd0bd0b356bc5e3154dda4d116b985832b4ded85cd2229"
+}

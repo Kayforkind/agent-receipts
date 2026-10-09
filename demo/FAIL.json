@@ -1,0 +1,19 @@
+{
+  "version": "0.1",
+  "task": "Failing run",
+  "agent": "unknown",
+  "createdAt": "2026-10-09T05:06:43.114Z",
+  "result": "fail",
+  "checks": [
+    {
+      "name": "tests",
+      "command": "node -e \"process.exit(1)\"",
+      "exitCode": 1,
+      "passed": false,
+      "durationMs": 84,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "artifacts": [],
+  "selfHash": "bcf9d7d1734a182e9a4d80dcf0e8e980de6a0113a24f6f041bfc106c7c2c9f11"
+}
