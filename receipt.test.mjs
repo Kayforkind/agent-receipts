@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { makeReceipt, verifyReceipt, canonicalize, generateKeys, signReceipt } from './receipt.mjs';
+import { makeReceipt, verifyReceipt, canonicalize, generateKeys, signReceipt, selfHashOf } from './receipt.mjs';
 
 const dir = () => mkdtempSync(join(tmpdir(), 'receipt-'));
 const ok = 'node -e "process.exit(0)"';
@@ -53,6 +53,39 @@ test('a "done" claim with no checks is rejected', () => {
   const v = verifyReceipt(r, { root: dir() });
   assert.equal(v.valid, false);
   assert.ok(v.problems.some((p) => p.includes('no checks ran')));
+});
+
+test('malformed receipt schemas are rejected without throwing', () => {
+  for (const value of [null, {}, { version: '0.2', task: 'x', checks: {}, artifacts: [] }, { version: '0.2', task: 'x', checks: [null], artifacts: [null] }]) {
+    assert.equal(verifyReceipt(value).valid, false);
+  }
+});
+
+test('artifact traversal cannot read outside the verification root', () => {
+  const root = dir();
+  const r = makeReceipt({ task: 't', checks: [['ok', ok]], cwd: root });
+  r.artifacts = [{ path: '../secret', sha256: '0'.repeat(64) }];
+  r.selfHash = selfHashOf(r);
+  assert.equal(verifyReceipt(r, { root }).valid, false);
+  assert.throws(() => makeReceipt({ task: 't', checks: [], artifacts: [process.execPath], cwd: root }), /relative/);
+});
+
+test('malformed signatures and contradictory timeout evidence fail closed', () => {
+  const keys = generateKeys();
+  const r = makeReceipt({ task: 't', checks: [['ok', ok]], cwd: dir() });
+  r.signature = { alg: 'ed25519', value: {} };
+  assert.equal(verifyReceipt(r, { publicKeyPem: keys.publicPem }).valid, false);
+  r.checks[0].timedOut = true;
+  r.selfHash = selfHashOf(r);
+  assert.equal(verifyReceipt(r).valid, false);
+});
+
+test('CLI rejects missing values and unknown flags', () => {
+  for (const args of [['make', '--check'], ['make', '--wat', 'x'], ['make', '--timeout', '1.5']]) {
+    const r = spawnSync(process.execPath, ['receipt.mjs', ...args], { encoding: 'utf8' });
+    assert.equal(r.status, 1);
+    assert.ok(!r.stderr.includes('at main'));
+  }
 });
 
 test('canonical JSON is key-order independent', () => {

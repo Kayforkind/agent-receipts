@@ -1,4 +1,6 @@
-# Agent receipts v0.2
+# Agent receipts v0.2.2
+
+> Evidence receipts with schema validation, root-confined artifact hashing, optional Ed25519 signatures, bounded checks and safe exclusive output.
 
 A RECEIPT.json is evidence that an agent's "done" claim is backed by checks.
 It records the task, each named check's exit code and output hash, the SHA-256
@@ -42,6 +44,14 @@ its timeout is killed and recorded with `exitCode` 124 and `timedOut: true`.
 failed, the `result` disagrees with the checks, or the signature does not match
 the public key. Without `--pubkey`, verify checks consistency only.
 
+## Security boundaries
+
+- Only run `make --check` with commands you trust: it deliberately executes a shell command with your permissions. Verification never executes receipt commands.
+- Artifact paths must be relative and resolve to regular files inside `--root` (including symlink resolution). Artifacts are limited to 64 MiB; CLI receipt input to 1 MiB.
+- Receipts and keys are created exclusively; existing outputs are not overwritten. On Windows, protect the private key with your account's filesystem ACL; Unix mode 0600 alone is not a Windows ACL guarantee.
+- Use `--pubkey` with a key obtained through a trusted channel. Unsigned consistency checks do not authenticate evidence. Never put tokens in command arguments recorded in a receipt.
+- A timeout stops the direct shell process; it is **not** process-tree isolation or a sandbox. Use an isolated CI runner for untrusted workloads.
+
 ## Limits
 
 - Verification recomputes hashes but does not re-run the checks. A verifier that
@@ -50,3 +60,7 @@ the public key. Without `--pubkey`, verify checks consistency only.
   checks were run honestly on the machine that signed it.
 - Check outputs are hashed, not stored. Keep your CI logs if you need them.
 - Signing uses Ed25519 only.
+
+## Release verification
+
+Use a supported Node LTS (22 or 24). Run `npm ci --ignore-scripts` followed by `npm run verify`. The security workflow runs the regression suite on Linux and Windows; it has not yet been executed remotely for this local change. New report/output files are created exclusively; choose fresh filenames or output folders for repeat runs. See [SECURITY.md](SECURITY.md) for the threat model and disclosure guidance.
